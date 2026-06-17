@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FeedbackLens — AI User Feedback Analyzer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <!-- App Shell -->
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon"><i class="fas fa-brain"></i></div>
+                <div class="brand-text">
+                    <span class="brand-name">FeedbackLens</span>
+                    <span class="brand-sub">AI Feedback Analyzer</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-view="dashboard" title="Dashboard">
+                    <i class="fas fa-chart-line"></i><span>Dashboard</span>
+                </button>
+                <button class="nav-btn" data-view="analyze" title="Analyze">
+                    <i class="fas fa-magnifying-glass-chart"></i><span>Analyze</span>
+                </button>
+                <button class="nav-btn" data-view="history" title="History">
+                    <i class="fas fa-clock-rotate-left"></i><span>History</span>
+                </button>
+                <button class="nav-btn" data-view="export" title="Export">
+                    <i class="fas fa-file-export"></i><span>Export</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <div class="theme-switcher">
+                    <button class="theme-btn" id="themeToggle" title="Toggle theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="hamburger" id="menuBtn"><i class="fas fa-bars"></i></button>
+                    <h1 class="page-title" id="pageTitle">Dashboard</h1>
+                </div>
+                <div class="topbar-right">
+                    <button class="add-btn" id="newAnalysisBtn">
+                        <i class="fas fa-plus"></i><span>New Analysis</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard View -->
+            <section class="view active" id="view-dashboard">
+                <!-- Stats Strip -->
+                <div class="stats-strip">
+                    <div class="stat">
+                        <div class="stat-icon blue"><i class="fas fa-comments"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-val" id="statTotal">0</span>
+                            <span class="stat-lbl">Total Feedback</span>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-icon green"><i class="fas fa-face-smile"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-val" id="statPositive">0</span>
+                            <span class="stat-lbl">Positive</span>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-icon red"><i class="fas fa-face-frown"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-val" id="statNegative">0</span>
+                            <span class="stat-lbl">Negative</span>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-icon yellow"><i class="fas fa-face-meh"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-val" id="statNeutral">0</span>
+                            <span class="stat-lbl">Neutral</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="charts-row">
+                    <div class="chart-card">
+                        <h3>Sentiment Distribution</h3>
+                        <div class="donut-wrap" id="sentimentDonut">
+                            <div class="donut">
+                                <svg width="140" height="140" viewBox="0 0 140 140">
+                                    <circle cx="70" cy="70" r="56" fill="none" stroke="var(--border)" stroke-width="14"/>
+                                    <circle class="donut-positive" cx="70" cy="70" r="56" fill="none" stroke="#22c55e" stroke-width="14" stroke-dasharray="0 352" stroke-linecap="round"/>
+                                    <circle class="donut-negative" cx="70" cy="70" r="56" fill="none" stroke="#ef4444" stroke-width="14" stroke-dasharray="0 352" stroke-linecap="round" transform="rotate(-90 70 70)"/>
+                                    <circle class="donut-neutral" cx="70" cy="70" r="56" fill="none" stroke="#f59e0b" stroke-width="14" stroke-dasharray="0 352" stroke-linecap="round"/>
+                                </svg>
+                                <div class="donut-center">
+                                    <div class="donut-val" id="donutTotal">0</div>
+                                    <div class="donut-lbl">total</div>
+                                </div>
+                            </div>
+                            <div class="donut-legend">
+                                <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div> Positive: <span id="legPos">0</span></div>
+                                <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div> Negative: <span id="legNeg">0</span></div>
+                                <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> Neutral: <span id="legNeu">0</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h3>Category Breakdown</h3>
+                        <div class="bar-chart" id="categoryBars">
+                            <!-- Filled by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Analysis -->
+                <div class="recent-section">
+                    <h3>Recent Analysis</h3>
+                    <div class="recent-list" id="recentList">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>No feedback analyzed yet</p>
+                            <button class="add-btn small" id="emptyNewBtn"><i class="fas fa-plus"></i> Analyze Feedback</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analyze View -->
+            <section class="view" id="view-analyze">
+                <div class="analyze-container">
+                    <div class="input-section">
+                        <h2>Paste User Feedback</h2>
+                        <p class="hint">Paste feedback text, reviews, survey responses, or support tickets. One per line or as a block.</p>
+                        <textarea id="feedbackInput" placeholder="e.g., The app crashes every time I try to upload a file. Very frustrating!&#10;&#10;Love the new dark mode feature! Makes it so much easier on the eyes.&#10;&#10;Would be great if you could add export to PDF functionality.&#10;&#10;The loading speed has improved significantly since the last update."></textarea>
+                        <div class="input-actions">
+                            <button class="btn-secondary" id="loadSampleBtn"><i class="fas fa-flask"></i> Load Sample</button>
+                            <button class="btn-secondary" id="clearInputBtn"><i class="fas fa-eraser"></i> Clear</button>
+                            <button class="btn-primary" id="analyzeBtn"><i class="fas fa-brain"></i> Analyze Feedback</button>
+                        </div>
+                    </div>
+
+                    <div class="results-section" id="resultsSection" style="display:none">
+                        <h2>Analysis Results</h2>
+                        <div class="results-summary" id="resultsSummary"></div>
+                        <div class="results-list" id="resultsList"></div>
+                        <div class="results-actions">
+                            <button class="btn-secondary" id="exportResultsBtn"><i class="fas fa-download"></i> Export CSV</button>
+                            <button class="btn-primary" id="newAnalysisFromResults"><i class="fas fa-plus"></i> New Analysis</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History View -->
+            <section class="view" id="view-history">
+                <div class="history-container">
+                    <h2>Analysis History</h2>
+                    <div class="history-list" id="historyList">
+                        <div class="empty-state">
+                            <i class="fas fa-clock-rotate-left"></i>
+                            <p>No analysis history yet</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Export View -->
+            <section class="view" id="view-export">
+                <div class="export-container">
+                    <h2>Export Reports</h2>
+                    <div class="export-options">
+                        <div class="export-card">
+                            <div class="export-icon"><i class="fas fa-file-csv"></i></div>
+                            <h3>CSV Export</h3>
+                            <p>Export all analyzed feedback with sentiment scores, categories, and keywords.</p>
+                            <button class="btn-primary" id="exportCsvBtn"><i class="fas fa-download"></i> Export CSV</button>
+                        </div>
+                        <div class="export-card">
+                            <div class="export-icon"><i class="fas fa-file-json"></i></div>
+                            <h3>JSON Export</h3>
+                            <p>Export structured data for integration with other tools and dashboards.</p>
+                            <button class="btn-primary" id="exportJsonBtn"><i class="fas fa-download"></i> Export JSON</button>
+                        </div>
+                        <div class="export-card">
+                            <div class="export-icon"><i class="fas fa-file-pdf"></i></div>
+                            <h3>Summary Report</h3>
+                            <p>Generate a printable summary with charts and key insights.</p>
+                            <button class="btn-primary" id="exportPdfBtn"><i class="fas fa-download"></i> Print Report</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMsg">Saved!</span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
