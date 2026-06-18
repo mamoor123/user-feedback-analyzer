@@ -73,6 +73,12 @@ The performance on Safari is terrible. Pages take 5+ seconds to load.`;
 
     // ============ Init ============
     function init() {
+        pendo.initialize({
+            visitor: {
+                id: ''
+            }
+        });
+
         loadState();
         applyTheme();
         render();
