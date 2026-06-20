@@ -2,7 +2,9 @@
 
 **Instantly analyze user feedback with AI-powered sentiment detection, category classification, and actionable insights.**
 
-![FeedbackLens](https://via.placeholder.com/800x400/0a0b10/8b5cf6?text=FeedbackLens)
+![FeedbackLens Dashboard](feedbacklens-dashboard-light.png)
+![FeedbackLens Analysis](feedbacklens-analysis-results.png)
+![FeedbackLens Export](feedbacklens-export.png)
 
 ---
 
