@@ -407,10 +407,20 @@ The performance on Safari is terrible. Pages take 5+ seconds to load.`;
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const index = parseInt(btn.dataset.deleteHistory);
+                const deletedAnalysis = state.analyses[index];
                 state.analyses.splice(index, 1);
                 saveState();
                 render();
                 toast('Analysis deleted');
+
+                // Pendo Track: analysis history deleted
+                if (typeof pendo !== 'undefined') {
+                    pendo.track('analysis_history_deleted', {
+                        deletedItemCount: deletedAnalysis && deletedAnalysis.results ? deletedAnalysis.results.length : 0,
+                        remainingAnalysesCount: state.analyses.length,
+                        deletedAnalysisTimestamp: deletedAnalysis ? deletedAnalysis.timestamp : ''
+                    });
+                }
             });
         });
     }
@@ -422,6 +432,17 @@ The performance on Safari is terrible. Pages take 5+ seconds to load.`;
         state.currentResults = analysis.results;
         showResults(analysis.results);
         switchView('analyze');
+
+        // Pendo Track: analysis history viewed
+        if (typeof pendo !== 'undefined') {
+            pendo.track('analysis_history_viewed', {
+                itemCount: analysis.results.length,
+                analysisTimestamp: analysis.timestamp,
+                positiveCount: analysis.results.filter(function(r) { return r.sentiment === 'positive'; }).length,
+                negativeCount: analysis.results.filter(function(r) { return r.sentiment === 'negative'; }).length,
+                neutralCount: analysis.results.filter(function(r) { return r.sentiment === 'neutral'; }).length
+            });
+        }
     }
 
     // ============ Analysis ============
@@ -454,6 +475,28 @@ The performance on Safari is terrible. Pages take 5+ seconds to load.`;
         showResults(results);
         renderDashboard();
         toast(`Analyzed ${results.length} feedback items!`);
+
+        // Pendo Track: feedback analysis completed
+        var positive = results.filter(function(r) { return r.sentiment === 'positive'; }).length;
+        var negative = results.filter(function(r) { return r.sentiment === 'negative'; }).length;
+        var neutral = results.filter(function(r) { return r.sentiment === 'neutral'; }).length;
+        if (typeof pendo !== 'undefined') {
+            pendo.track('feedback_analysis_completed', {
+                itemCount: results.length,
+                positiveCount: positive,
+                negativeCount: negative,
+                neutralCount: neutral,
+                avgScore: Math.round(results.reduce(function(s, r) { return s + r.score; }, 0) / results.length),
+                categoriesFound: Array.from(new Set(results.map(function(r) { return r.category; }))).join(', '),
+                bugCount: results.filter(function(r) { return r.category === 'bug'; }).length,
+                featureRequestCount: results.filter(function(r) { return r.category === 'feature'; }).length,
+                praiseCount: results.filter(function(r) { return r.category === 'praise'; }).length,
+                complaintCount: results.filter(function(r) { return r.category === 'complaint'; }).length,
+                questionCount: results.filter(function(r) { return r.category === 'question'; }).length,
+                inputTextLength: text.length,
+                totalAnalysesCount: state.analyses.length
+            });
+        }
     }
 
     function showResults(results) {
@@ -535,6 +578,15 @@ The performance on Safari is terrible. Pages take 5+ seconds to load.`;
         const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
         downloadFile(csv, 'feedbacklens-export.csv', 'text/csv');
         toast('CSV exported!');
+
+        // Pendo Track: CSV export completed
+        if (typeof pendo !== 'undefined') {
+            pendo.track('export_csv_completed', {
+                itemCount: results.length,
+                fileName: 'feedbacklens-export.csv',
+                exportSource: state.currentResults.length > 0 ? 'results' : 'all_analyses'
+            });
+        }
     }
 
     function exportJSON() {
@@ -547,6 +599,15 @@ The performance on Safari is terrible. Pages take 5+ seconds to load.`;
         const json = JSON.stringify(data, null, 2);
         downloadFile(json, 'feedbacklens-export.json', 'application/json');
         toast('JSON exported!');
+
+        // Pendo Track: JSON export completed
+        if (typeof pendo !== 'undefined') {
+            pendo.track('export_json_completed', {
+                totalAnalyses: state.analyses.length,
+                totalFeedbackItems: state.analyses.flatMap(function(a) { return a.results || []; }).length,
+                fileName: 'feedbacklens-export.json'
+            });
+        }
     }
 
     function downloadFile(content, filename, type) {
@@ -609,6 +670,15 @@ The performance on Safari is terrible. Pages take 5+ seconds to load.`;
         $('#loadSampleBtn').addEventListener('click', () => {
             $('#feedbackInput').value = SAMPLE_FEEDBACK;
             toast('Sample feedback loaded');
+
+            // Pendo Track: sample data loaded
+            if (typeof pendo !== 'undefined') {
+                pendo.track('sample_data_loaded', {
+                    sampleItemCount: SAMPLE_FEEDBACK.split('\n').filter(function(l) { return l.trim().length > 5; }).length,
+                    isFirstUse: state.analyses.length === 0,
+                    totalAnalysesCount: state.analyses.length
+                });
+            }
         });
 
         // Clear
@@ -621,7 +691,16 @@ The performance on Safari is terrible. Pages take 5+ seconds to load.`;
         $('#exportResultsBtn').addEventListener('click', exportCSV);
         $('#exportCsvBtn').addEventListener('click', exportCSV);
         $('#exportJsonBtn').addEventListener('click', exportJSON);
-        $('#exportPdfBtn').addEventListener('click', () => window.print());
+        $('#exportPdfBtn').addEventListener('click', () => {
+            // Pendo Track: report printed
+            if (typeof pendo !== 'undefined') {
+                pendo.track('report_printed', {
+                    totalAnalyses: state.analyses.length,
+                    totalFeedbackItems: state.analyses.flatMap(function(a) { return a.results || []; }).length
+                });
+            }
+            window.print();
+        });
 
         // New Analysis from results
         $('#newAnalysisFromResults').addEventListener('click', () => {
